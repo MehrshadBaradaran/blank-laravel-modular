@@ -1,0 +1,23 @@
+{
+    "name": "nwidart/tac",
+    "description": "",
+    "authors": [
+        {
+            "name": "Mehrshad Baradaran",
+            "email": "baradaran.mehrshad@agmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\TAC\\": ""
+        }
+    }
+}

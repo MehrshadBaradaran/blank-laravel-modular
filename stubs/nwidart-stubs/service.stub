@@ -1,0 +1,27 @@
+<?php
+
+namespace $NAMESPACE$;
+
+class $NAME$Service extends Factory
+{
+    public function getAlias(): string
+    {
+        return __('user::alias.$NAME$');
+    }
+
+    public function store(array $data)
+    {
+        //
+    }
+
+    public function update()
+    {
+        //
+    }
+
+    public function destroy(): bool
+    {
+        //
+    }
+}
+

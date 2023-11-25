@@ -1,0 +1,27 @@
+<?php
+
+namespace $NAMESPACE$;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class $CLASS$ extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function prepareForValidation(): void
+    {
+        $this->merge([
+            //
+        ]);
+    }
+
+    public function rules(): array
+    {
+        return [
+            //
+        ];
+    }
+}

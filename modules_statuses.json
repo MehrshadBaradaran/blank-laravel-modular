@@ -1,0 +1,18 @@
+{
+    "RolePermission": true,
+    "Gallery": true,
+    "Authentication": true,
+    "Notification": true,
+    "Spy": true,
+    "User": true,
+    "Banner": true,
+    "ContactUs": true,
+    "Tset": true,
+    "AboutUs": true,
+    "TAC": true,
+    "TermsAndConditions": true,
+    "TermsAndCondition": true,
+    "FAQ": true,
+    "VersionControl": true,
+    "Setting": true
+}

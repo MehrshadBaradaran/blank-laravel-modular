@@ -1,0 +1,38 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+
+class {{ class }} extends Model
+{
+    use HasFactory;
+
+    protected $guarded = [
+        'id',
+    ];
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
+    //.................Casts.................
+
+    //.................Relations.................
+
+    //.................Scopes.................
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', true);
+    }
+
+    //.................Attributes.................
+    public function getStatusTextAttribute(): string
+    {
+        return $this->status ? 'فعال' : 'غیر فعال';
+    }
+
+    //.................Functionality.................
+
+}

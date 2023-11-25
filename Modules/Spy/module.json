@@ -1,0 +1,11 @@
+{
+    "name": "Spy",
+    "alias": "spy",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Spy\\app\\Providers\\SpyServiceProvider"
+    ],
+    "files": []
+}

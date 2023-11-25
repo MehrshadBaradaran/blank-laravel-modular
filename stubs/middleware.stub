@@ -1,0 +1,16 @@
+<?php
+
+namespace {{ namespace }};
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
+
+class {{ class }}
+{
+    public function handle(Request $request, Closure $next): Response|RedirectResponse
+    {
+        return $next($request);
+    }
+}

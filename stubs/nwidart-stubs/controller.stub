@@ -1,0 +1,50 @@
+<?php
+
+namespace $CLASS_NAMESPACE$;
+
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+
+class $CLASS$ extends Controller
+{
+    public function index(): Renderable
+    {
+        //
+    }
+
+    public function create(): Renderable
+    {
+        //
+    }
+
+    public function store(Request $request): Renderable
+    {
+        //
+    }
+
+    public function show($id): Renderable
+    {
+        //
+    }
+
+    public function edit($id): Renderable
+    {
+        //
+    }
+
+    public function update(Request $request, $id): Renderable
+    {
+        //
+    }
+
+    public function destroy($id): Renderable
+    {
+        //
+    }
+
+    public function status($id): Renderable
+    {
+        //
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "TAC",
+    "alias": "tac",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\TAC\\app\\Providers\\TACServiceProvider"
+    ],
+    "files": []
+}

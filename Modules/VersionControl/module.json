@@ -1,0 +1,11 @@
+{
+    "name": "VersionControl",
+    "alias": "versioncontrol",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\VersionControl\\app\\Providers\\VersionControlServiceProvider"
+    ],
+    "files": []
+}

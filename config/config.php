@@ -3,6 +3,9 @@
 $CURRENCY = env('CURRENCY', 'T');
 
 return [
+    'otp_length' =>env('OTP_LENGTH', 4),
+    'otp_expiration_seconds' =>env('OTP_EXPIRATION_MINUTES', 2),
+
     'sms_provider_name' =>env('SMS_PROVIDER_NAME', ''),
     'sms_provider_api_key' =>env('SMS_PROVIDER_API_KEY', ''),
 

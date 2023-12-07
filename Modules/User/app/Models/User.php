@@ -41,6 +41,11 @@ class User extends Authenticatable
         return UserFactory::new();
     }
 
+    protected static function service(): UserService
+    {
+        return new UserService();
+    }
+
     //.................Casts.................
     protected $casts = [
         'status' => StatusEnum::class,

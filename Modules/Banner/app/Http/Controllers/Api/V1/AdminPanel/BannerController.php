@@ -5,7 +5,6 @@ namespace Modules\Banner\app\Http\Controllers\Api\V1\AdminPanel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Modules\Banner\app\Http\Requests\Api\V1\AdminPanel\Banner\BannerStoreRequest;
 use Modules\Banner\app\Http\Requests\Api\V1\AdminPanel\Banner\BannerUpdateRequest;
@@ -17,16 +16,18 @@ use Modules\RolePermission\app\Models\Permission;
 
 class BannerController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.banner';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.banner.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $banners = Banner::query()
-            ->when($request->search, function ($q, $value) {
-                $q->where('title', 'LIKE', "%$value%");
+            ->when($request->search, function ($q, $v) {
+                $q->whereLike('title', $v);
             })
-            ->when($request->status, function ($q, $value) {
-                $q->where('status', $value == 'true');
+            ->when($request->status, function ($q, $v) {
+                $q->where('status', $v == 'true');
             })
             ->orderBy('created_at', 'desc');
 
@@ -35,94 +36,79 @@ class BannerController extends Controller
             ? $banners->paginate($request->get('page_size'))
             : $banners->get();
 
-        return response()->json((new BannerCollection($banners))->response()->getData(true));
+        return response()->list(BannerCollection::make($banners)->response()->getData(true));
     }
 
     public function store(BannerStoreRequest $request, BannerService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.banner.create']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.create"]);
 
         try {
             $banner = $service->create($request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.store.success', ['attribute' => $service->getAlias(),]),
-                'data' => new BannerResource($banner),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Banner store: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.store.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.store.success', ['attribute' => $service->getAlias(),]),
+                data: BannerResource::make($banner)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function show(Banner $banner): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.banner.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
-        return response()->json([
-            'data' => new BannerResource($banner),
-        ]);
+        return response()->success(data: BannerResource::make($banner));
     }
 
     public function update(BannerUpdateRequest $request, Banner $banner, BannerService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.banner.update']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.update"]);
 
         try {
             $service->update($banner, $request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.update.success', ['attribute' => $service->getAlias(),]),
-                'data' => new BannerResource($banner),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Banner update: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.update.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.update.success', ['attribute' => $service->getAlias(),]),
+                data: BannerResource::make($banner)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.update.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function destroy(Banner $banner, BannerService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.banner.delete']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.delete"]);
 
         try {
             $service->delete($banner);
 
-            return response()->json([
-                'message' => __('messages.delete.success', ['attribute' => $service->getAlias(),]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Banner destroy: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.delete.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.delete.success', ['attribute' => $service->getAlias(),]),
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.delete.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function changeStatus(Banner $banner, BannerService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.banner.change-status']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.change-status"]);
 
         try {
             $banner = $service->changeStatus($banner, !$banner->status->value);
 
-            return response()->json([
-                'message' => __('messages.status-change.success', [
+            return response()->success(
+                message: __('messages.status-change.success', [
                     'attribute' => $service->getAlias(),
                     'status' => $banner->status->getAlias(),
                 ]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Banner status: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.status-change.failure'),
-            ], 500);
+                data: BannerResource::make($banner)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.status-change.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 use Modules\Gallery\app\Http\Requests\Api\V1\AdminPanel\ImageGallery\ImageGalleryStoreRequest;
 use Modules\Gallery\app\Models\ImageGallery;
 use Modules\Gallery\app\Resources\V1\AdminPanel\ImageGallery\ImageGalleryCollection;
@@ -16,9 +15,11 @@ use Modules\RolePermission\app\Models\Permission;
 
 class ImageGalleryController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.image_gallery';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('check-permission', [Permission::class, 'admin_panel.image_gallery.view',]);
+        $this->authorize('check-permission', [Permission::class, "$this->permissionPrefix.view",]);
 
         $images = ImageGallery::query()
             ->when($request->section, function ($q, $v) {
@@ -33,56 +34,44 @@ class ImageGalleryController extends Controller
             ? $images->paginate($request->get('page_size'))
             : $images->get();
 
-        return response()->json((new ImageGalleryCollection($images))->response()->getData(true));
+        return response()->list(ImageGalleryCollection::make($images)->response()->getData(true));
     }
 
     public function store(ImageGalleryStoreRequest $request, ImageGalleryService $service): JsonResponse
     {
-        $this->authorize('check-permission', [Permission::class, 'admin_panel.image_gallery.create',]);
-
-        $alias = $service->getAlias();
+        $this->authorize('check-permission', [Permission::class, "$this->permissionPrefix.create",]);
 
         try {
-            $gallery = $service->create($request->getSafeData());
+            $image = $service->create($request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.upload.success', ['attribute' => $alias]),
-                'data' => new ImageGalleryResource($gallery),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('ImageGallery store: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.upload.failure'),
-            ], 500);
+            return response()->success(
+                message: __('messages.upload.success'),
+                data: ImageGalleryResource::make($image)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.upload.failure'));
         }
     }
 
     public function show(ImageGallery $image): JsonResponse
     {
-        $this->authorize('check-permission', [Permission::class, 'admin_panel.image_gallery.view',]);
+        $this->authorize('check-permission', [Permission::class, "$this->permissionPrefix.view",]);
 
-        return response()->json([
-            'data' => new ImageGalleryResource($image),
-        ]);
+        return response()->success(data: ImageGalleryResource::make($image));
     }
 
     public function destroy(ImageGallery $image, ImageGalleryService $service): JsonResponse
     {
-        $this->authorize('check-permission', [Permission::class, 'admin_panel.image_gallery.delete',]);
-
-        $alias = $service->getAlias();
+        $this->authorize('check-permission', [Permission::class, "$this->permissionPrefix.delete",]);
 
         try {
             $service->delete($image);
 
-            return response()->json([
-                'message' => __('messages.delete.success', ['attribute' => $alias]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('ImageGallery Destroy: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.delete.failure', ['attribute' => $alias]),
-            ], 500);
+            return response()->success(
+                message: __('messages.delete.success', ['attribute' => $service->getAlias(),]),
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.delete.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

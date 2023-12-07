@@ -3,6 +3,7 @@
 namespace Modules\TAC\app\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\TAC\app\Services\TACService;
 
 class TAC extends Model
 {
@@ -10,6 +11,11 @@ class TAC extends Model
     protected $guarded = [
         'id',
     ];
+
+    protected static function service(): TACService
+    {
+        return new TACService();
+    }
 
     //.................Casts.................
     protected $casts = [

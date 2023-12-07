@@ -66,7 +66,7 @@ class Notification extends Model
         return $this->users()->pluck('users.id')->toArray();
     }
 
-    public function getUsersDataArrayAttribute(): array
+    public function getUsersDataArrayAttribute(): array|null
     {
         return !$this->general
             ? $this->users()
@@ -77,7 +77,7 @@ class Notification extends Model
                         'full_name' => $user->full_name,
                     ];
                 })->toArray()
-            : [];
+            : null;
     }
 
     public function getIsReadAttribute(): bool

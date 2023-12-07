@@ -12,16 +12,15 @@ use Modules\Spy\app\Resources\V1\AdminPanel\Spy\SpyResource;
 
 class SpyController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.spy';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.spy.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $spyLogs = Spy::query()
             ->when($request->search, function ($q, $v) {
-                $q->where(function ($q)use ($v) {
-                    $q->where('title', 'LIKE', "%$v%")
-                        ->orWhere('ip_address', 'LIKE', "%$v%");
-                });
+                $q->whereLike(['title', 'ip_address',], $v);
             })
             ->when($request->user, function ($q, $v) {
                 $q->where('user_id', $v);
@@ -32,21 +31,20 @@ class SpyController extends Controller
             ->when($request->action, function ($q, $v) {
                 $q->where('action', $v);
             })
+            ->with(['user', 'target', 'permission',])
             ->orderBy('created_at', 'desc');
 
         $spyLogs = $request->get('paginate', 'true') == 'true'
             ? $spyLogs->paginate($request->get('page_size'))
             : $spyLogs->get();
 
-        return response()->json((new SpyCollection($spyLogs))->response()->getData(true));
+        return response()->list(SpyCollection::make($spyLogs)->response()->getData(true));
     }
 
     public function show(Spy $spyLog): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.spy.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
-        return response()->json([
-            'data' => new SpyResource($spyLog),
-        ]);
+        return response()->success(data: SpyResource::make($spyLog));
     }
 }

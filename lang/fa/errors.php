@@ -2,9 +2,13 @@
 
 return [
     'code' => [
-        '500' => '500 - خطا سرور؛ لطفا مجدد تلاش کنید!',
-        '404' => '404 - یافت نشد!',
-        '401' => '401 - شما اجازه دسترسی به این بخش را ندارید!',
-        '403' => '403 - دسترسی ممنوع!',
+        'auth' => 'Unauthenticated.',
+        '401' => 'Unauthorized.',
+        '402' => 'Bad request.',
+        '403' => 'This action is unauthorized.',
+        '404' => 'Not found.',
+        '405' => 'Method not allowed.',
+        '500' => 'Internal server error.',
+        '503' => 'Service unavailable.',
     ],
 ];

@@ -15,8 +15,8 @@ class BannerController extends Controller
     {
         $banners = Banner::query()
             ->active()
-            ->when($request->search, function ($q, $value) {
-                $q->where('title', 'LIKE', "%$value%");
+            ->when($request->search, function ($q, $v) {
+                $q->whereLike('title', $v);
             })
             ->orderBy('created_at', 'desc');
 
@@ -24,17 +24,11 @@ class BannerController extends Controller
             ? $banners->paginate($request->get('page_size'))
             : $banners->get();
 
-        return response()->json((new BannerCollection($banners))->response()->getData(true));
+        return response()->list(BannerCollection::make($banners)->response()->getData(true));
     }
 
     public function show(Banner $banner): JsonResponse
     {
-        $this->authorize('viewAny', [Banner::class, $banner]);
-
-        $banner->markAsRead();
-
-        return response()->json([
-            'data' => new BannerResource($banner),
-        ]);
+        return response()->success(data: BannerResource::make($banner));
     }
 }

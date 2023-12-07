@@ -9,7 +9,6 @@ use Illuminate\Routing\Controller;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Modules\Authentication\app\Http\Requests\Api\V1\GetOTPRequest;
 use Modules\Authentication\app\Http\Requests\Api\V1\LoginOTPRequest;
 use Modules\Authentication\app\Http\Requests\Api\V1\LoginPasswordRequest;
@@ -25,7 +24,9 @@ class AuthController extends Controller
 {
     public function user(): JsonResponse
     {
-        return response()->json(new AuthUserResource(Auth::user()));
+        return response()->success(data: [
+            'user' => AuthUserResource::make(Auth::user()),
+        ]);
     }
 
     public function phoneStatus(PhoneStatusRequest $request): JsonResponse
@@ -39,15 +40,12 @@ class AuthController extends Controller
                 ]);
             }
 
-            return response()->json([
+            return response()->success(data: [
                 'should_register' => !$user->is_registered,
             ]);
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Phone status: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 
@@ -60,15 +58,12 @@ class AuthController extends Controller
                 'phone_verified_at' => now()
             ]);
 
-            return response()->json([
+            return response()->success(data: [
                 'should_register' => !$user->is_registered,
             ]);
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Verify phone: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 
@@ -80,22 +75,17 @@ class AuthController extends Controller
 
                 $accessToken = $authService->generateAccessToken($user);
 
-                return response()->json([
+                return response()->success(data: [
                     'token' => $accessToken->token,
                     'token_type' => $accessToken->token_type,
                     'token_expiration_seconds' => $accessToken->token_expiration_seconds,
                     'user' => new AuthUserResource($user),
                 ]);
             }
-            return response()->json([
-                'message' => __('auth.wrong-credentials.phone')
-            ], 400);
+            return response()->error(message: __('auth.wrong-credentials.phone'), statusCode: 401);
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Login with password: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 
@@ -118,17 +108,14 @@ class AuthController extends Controller
                 SMS::sendPattern(['phone' => $request->phone, 'token1' => $otp, 'template' => 'verify']);
             }
 
-            return response()->json([
-                'otp_expiration_seconds' => $otpExpiration,
-                'otp_length' => $otpLength,
-                'message' => __('messages.login.otp.sent', ['phone' => $user->phone_with_zero]),
-            ]);
+            return response()->success(__('messages.login.otp-send', ['phone' => $user->phone_with_zero,]),
+                data: [
+                    'otp_expiration_seconds' => $otpExpiration,
+                    'otp_length' => $otpLength,
+                ]);
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Get OTP: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 
@@ -141,7 +128,7 @@ class AuthController extends Controller
 
             $accessToken = $authService->generateAccessToken($user);
 
-            return response()->json([
+            return response()->success(data: [
                 'token' => $accessToken->token,
                 'token_type' => $accessToken->token_type,
                 'token_expiration_seconds' => $accessToken->token_expiration_seconds,
@@ -149,10 +136,7 @@ class AuthController extends Controller
             ]);
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Get OTP: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 
@@ -165,21 +149,18 @@ class AuthController extends Controller
 
                 $accessToken = $authService->generateAccessToken($user);
 
-                return [
+                return response()->success(__('messages.registration.success'), data: [
                     'token' => $accessToken->token,
                     'token_type' => $accessToken->token_type,
-                    'token_expiration' => $accessToken->token_expiration_seconds,
-                    'message' => __('messages.registration.success'),
+                    'token_expiration_seconds' => $accessToken->token_expiration_seconds,
                     'user' => new AuthUserResource($user),
-                ];
+                ]);
+
             });
             return response()->json($response);
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Register: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.registration.failure'),
-            ], 500);
+            return response()->error($exception, __('messages.registration.failure'));
         }
     }
 
@@ -194,15 +175,10 @@ class AuthController extends Controller
 
             $user->verificationTokens()->delete();
 
-            return response()->json([
-                'message' => __('passwords.reset')
-            ]);
+            return response()->success(__('passwords.reset'));
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Register: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 
@@ -210,13 +186,11 @@ class AuthController extends Controller
     {
         try {
             Auth::user()->tokens()->delete();
-            return response()->json(status: 204);
+
+            return response()->success();
 
         } catch (Exception $exception) {
-            Log::channel('bug_report')->error("Logout: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('errors.code.500'),
-            ], 500);
+            return response()->error($exception, __('errors.500'));
         }
     }
 }

@@ -13,11 +13,8 @@ class SettingController extends Controller
     public function __invoke(): JsonResponse
     {
         $cacheKey = config('setting.cache_key');
+        $data = Cache::has($cacheKey) ? Cache::get($cacheKey) : Setting::firstOrFail();
 
-        $data = Cache::has($cacheKey) ? Cache::get($cacheKey) :  Setting::firstOrFail();
-
-        return response()->json([
-            'data' => new SettingResource($data),
-        ]);
+        return response()->success(data: SettingResource::make($data));
     }
 }

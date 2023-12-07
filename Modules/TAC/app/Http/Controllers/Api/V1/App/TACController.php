@@ -13,11 +13,8 @@ class TACController extends Controller
     public function __invoke(): JsonResponse
     {
         $cacheKey = config('tac.cache_key');
+        $data = Cache::has($cacheKey) ? Cache::get($cacheKey) : TAC::firstOrFail();
 
-        $data = Cache::has($cacheKey) ? Cache::get($cacheKey) :  TAC::firstOrFail();
-
-        return response()->json([
-            'data' => new TACResource($data),
-        ]);
+        return response()->success(data: TACResource::make($data));
     }
 }

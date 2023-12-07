@@ -78,6 +78,6 @@ return [
 
     'login' => [
         'success' => 'You have successfully logged in.',
-        'otp.sent' => 'The OTP was sent to :phone.',
+        'otp-send' => 'The OTP was send to :phone.',
     ],
 ];

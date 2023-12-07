@@ -18,7 +18,7 @@ class NotificationController extends Controller
             ->notifications()
             ->active()
             ->when($request->search, function ($q, $v) {
-                $q->where('title', 'LIKE', "%$v%");
+                $q->whereLike('title', $v);
             })
             ->when($request->infrom_type, function ($q, $v) {
                 $q->where('inform_type', $v);
@@ -29,7 +29,7 @@ class NotificationController extends Controller
             ? $notifications->paginate($request->get('page_size'))
             : $notifications->get();
 
-        return response()->json((new NotificationCollection($notifications))->response()->getData(true));
+        return response()->list(NotificationCollection::make($notifications)->response()->getData(true));
     }
 
     public function show(Notification $notification): JsonResponse
@@ -38,8 +38,6 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
-        return response()->json([
-            'data' => new NotificationResource($notification),
-        ]);
+        return response()->success(data: NotificationResource::make($notification));
     }
 }

@@ -26,8 +26,8 @@ class GetOTPRequest extends FormRequest
         return [
             'phone' => [
                 'required', 'string',
-                new Phone(),
                 Rule::exists('users', 'phone'),
+                new Phone(),
             ],
         ];
     }

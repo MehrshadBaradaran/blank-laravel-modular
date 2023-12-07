@@ -13,11 +13,8 @@ class AboutUsController extends Controller
     public function __invoke(): JsonResponse
     {
         $cacheKey = config('aboutus.cache_key');
-
         $data = Cache::has($cacheKey) ? Cache::get($cacheKey) :  AboutUs::firstOrFail();
 
-        return response()->json([
-            'data' => new AboutUsResource($data),
-        ]);
+        return response()->success(data: AboutUsResource::make($data));
     }
 }

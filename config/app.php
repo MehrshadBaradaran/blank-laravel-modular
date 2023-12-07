@@ -173,6 +173,7 @@ return [
          * Custom Service Providers...
          */
         App\Providers\CommandServiceProvider::class,
+        App\Providers\MacroServiceProvider::class,
 
     ])->toArray(),
 

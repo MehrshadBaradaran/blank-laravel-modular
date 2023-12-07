@@ -13,11 +13,8 @@ class ContactUsController extends Controller
     public function __invoke(): JsonResponse
     {
         $cacheKey = config('contactus.cache_key');
-
         $data = Cache::has($cacheKey) ? Cache::get($cacheKey) :  ContactUs::firstOrFail();
 
-        return response()->json([
-            'data' => new ContactUsResource($data),
-        ]);
+        return response()->success(data: ContactUsResource::make($data));
     }
 }

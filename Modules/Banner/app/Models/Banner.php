@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Banner\app\Observers\BannerObserver;
+use Modules\Banner\app\Services\BannerService;
 use \Modules\Banner\Database\factories\BannerFactory;
 use Modules\Gallery\app\Services\GalleryService;
 
@@ -28,6 +29,11 @@ class Banner extends Model
     protected static function newFactory(): BannerFactory
     {
         return BannerFactory::new();
+    }
+
+    protected static function service(): BannerService
+    {
+        return new BannerService();
     }
 
     //.................Casts.................

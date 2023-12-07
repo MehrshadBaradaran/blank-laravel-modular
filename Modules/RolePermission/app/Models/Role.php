@@ -5,6 +5,7 @@ namespace Modules\RolePermission\app\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\RolePermission\app\Services\RoleService;
 use Spatie\Permission\Guard;
 use \Spatie\Permission\Models\Role as BaseRoleModel;
 use Spatie\Permission\PermissionRegistrar;
@@ -16,6 +17,11 @@ class Role extends BaseRoleModel
     protected $guarded = [
         'id',
     ];
+
+    protected static function service(): RoleService
+    {
+        return new RoleService();
+    }
 
     //.................Casts.................
     protected $casts = [

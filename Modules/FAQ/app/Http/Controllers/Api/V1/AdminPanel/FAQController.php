@@ -5,7 +5,6 @@ namespace Modules\FAQ\app\Http\Controllers\Api\V1\AdminPanel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Modules\FAQ\app\Http\Requests\Api\V1\AdminPanel\FAQ\FAQSortRequest;
 use Modules\FAQ\app\Http\Requests\Api\V1\AdminPanel\FAQ\FAQStoreRequest;
@@ -18,132 +17,113 @@ use Modules\RolePermission\app\Models\Permission;
 
 class FAQController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.faq';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $faqs = FAQ::query()
-            ->when($request->search, function ($q, $value) {
-                $q->where('question', 'LIKE', "%$value%");
+            ->when($request->search, function ($q, $v) {
+                $q->whereLike('question', $v);
             })
-            ->when($request->status, function ($q, $value) {
-                $q->where('status', $value == 'true');
+            ->when($request->status, function ($q, $v) {
+                $q->where('status', $v == 'true');
             })
-            ->orderBy('sort_index', 'desc')
+            ->orderBy('sort_index')
             ->orderBy('created_at', 'desc');
-
 
         $faqs = $request->get('paginate', 'true') == 'true'
             ? $faqs->paginate($request->get('page_size'))
             : $faqs->get();
 
-        return response()->json((new FAQCollection($faqs))->response()->getData(true));
+        return response()->list(FAQCollection::make($faqs)->response()->getData(true));
     }
 
     public function store(FAQStoreRequest $request, FAQService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.create']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.create"]);
 
         try {
             $faq = $service->create($request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.store.success', ['attribute' => $service->getAlias(),]),
-                'data' => new FAQResource($faq),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('FAQ store: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.store.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.store.success', ['attribute' => $service->getAlias(),]),
+                data: FAQResource::make($faq)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function show(FAQ $faq): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
-        return response()->json([
-            'data' => new FAQResource($faq),
-        ]);
+        return response()->success(data: FAQResource::make($faq));
     }
 
     public function update(FAQUpdateRequest $request, FAQ $faq, FAQService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.update']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.update"]);
 
         try {
             $service->update($faq, $request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.update.success', ['attribute' => $service->getAlias(),]),
-                'data' => new FAQResource($faq),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('FAQ update: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.update.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.update.success', ['attribute' => $service->getAlias(),]),
+                data: FAQResource::make($faq)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.update.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function destroy(FAQ $faq, FAQService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.delete']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.delete"]);
 
         try {
             $service->delete($faq);
 
-            return response()->json([
-                'message' => __('messages.delete.success', ['attribute' => $service->getAlias(),]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('FAQ destroy: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.delete.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.delete.success', ['attribute' => $service->getAlias(),]),
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.delete.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function changeStatus(FAQ $faq, FAQService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.change-status']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.change-status"]);
 
         try {
             $faq = $service->changeStatus($faq, !$faq->status->value);
 
-            return response()->json([
-                'message' => __('messages.status-change.success', [
+            return response()->success(
+                message: __('messages.status-change.success', [
                     'attribute' => $service->getAlias(),
                     'status' => $faq->status->getAlias(),
                 ]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('FAQ status: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.status-change.failure'),
-            ], 500);
+                data: FAQResource::make($faq)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.status-change.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function sort(FAQSortRequest $request, FAQService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.faq.sort']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.sort"]);
 
         try {
             $service->sort($request->ids);
 
-            return response()->json([
-                'message' => __('messages.sort.success'),
-            ]);
+            return response()->success(__('messages.sort.success'));
 
-        } catch (Exception $exception) {
-            Log::channel('report')->error("$this->alias reorder: " . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.sort.failure'),
-            ], 500);
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.sort.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

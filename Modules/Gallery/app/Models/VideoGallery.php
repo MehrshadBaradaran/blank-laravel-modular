@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Gallery\app\Enums\GallerySectionEnum;
 use Modules\Gallery\app\Observers\VideoGalleryObserver;
 use Modules\Gallery\app\Services\GalleryService;
+use Modules\Gallery\app\Services\VideoGalleryService;
 use Modules\User\app\Models\User;
 
 class VideoGallery extends Model
@@ -21,6 +22,11 @@ class VideoGallery extends Model
     {
         parent::boot();
         self::observe(VideoGalleryObserver::class);
+    }
+
+    protected static function service(): VideoGalleryService
+    {
+        return new VideoGalleryService();
     }
 
     //.................Casts.................

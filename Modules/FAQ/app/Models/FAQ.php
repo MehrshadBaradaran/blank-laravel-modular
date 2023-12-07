@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\FAQ\app\Services\FAQService;
 use Modules\FAQ\Database\factories\FAQFactory;
 
 class FAQ extends Model
@@ -21,6 +22,11 @@ class FAQ extends Model
     protected static function newFactory(): FAQFactory
     {
         return FAQFactory::new();
+    }
+
+    protected static function service(): FAQService
+    {
+        return new FAQService();
     }
 
     //.................Casts.................

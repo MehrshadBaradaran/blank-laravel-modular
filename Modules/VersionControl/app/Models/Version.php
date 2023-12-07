@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\VersionControl\app\Services\VersionService;
 use Modules\VersionControl\Database\factories\VersionFactory;
 
 class Version extends Model
@@ -20,6 +21,11 @@ class Version extends Model
     protected static function newFactory(): VersionFactory
     {
         return VersionFactory::new();
+    }
+
+    protected static function service(): VersionService
+    {
+        return new VersionService();
     }
 
     //.................Casts.................

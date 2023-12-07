@@ -13,17 +13,16 @@ class VersionController extends Controller
 {
     public function __invoke($os, $version): JsonResponse
     {
+        $platforms = Platform::active()
+            ->where('os', $os)
+            ->get();
         $latestVersion = Version::query()
             ->where('version_number', '>', $version)
             ->first();
 
-        $platforms = Platform::active()
-            ->where('os', $os)
-            ->get();
-
-        return response()->json([
+        return response()->success(data: [
             'new_version' => isset($latestVersion),
-            'version' => isset($latestVersion) ? new VersionResource($latestVersion) : (object)[],
+            'version' => isset($latestVersion) ? new VersionResource($latestVersion) : null,
             'platforms' => new PlatformCollection($platforms),
         ]);
     }

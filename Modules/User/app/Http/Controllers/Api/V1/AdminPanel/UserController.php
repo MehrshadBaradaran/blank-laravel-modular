@@ -5,7 +5,6 @@ namespace Modules\User\app\Http\Controllers\Api\V1\AdminPanel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Modules\RolePermission\app\Models\Permission;
 use Modules\User\app\Http\Requests\Api\V1\AdminPanel\User\ChangeUserRoleRequest;
@@ -18,27 +17,25 @@ use Modules\User\app\Services\UserService;
 
 class UserController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.user';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.user.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $users = User::query()
             ->notSuperAdmin()
-            ->when($request->search, function ($q, $value) {
-                $q->where(function ($q) use ($value) {
-                    $q->where('first_name', 'LIKE', "%$value%")
-                        ->orWhere('last_name', 'LIKE', "%$value%")
-                        ->orWhere('phone', 'LIKE', "%$value%");
-                });
+            ->when($request->search, function ($q, $v) {
+                $q->whereLike(['first_name', 'last_name', 'phone',], $v);
             })
-            ->when($request->registered, function ($q, $value) {
-                $q->where('is_registered', $value == 'true');
+            ->when($request->registered, function ($q, $v) {
+                $q->where('is_registered', $v == 'true');
             })
-            ->when($request->admin, function ($q, $value) {
-                $q->where('is_admin', $value == 'true');
+            ->when($request->admin, function ($q, $v) {
+                $q->where('is_admin', $v == 'true');
             })
-            ->when($request->status, function ($q, $value) {
-                $q->where('status', $value == 'true');
+            ->when($request->status, function ($q, $v) {
+                $q->where('status', $v == 'true');
             })
             ->orderBy('created_at', 'desc');
 
@@ -46,77 +43,63 @@ class UserController extends Controller
             ? $users->paginate($request->get('page_size'))
             : $users->get();
 
-        return response()->json((new UserCollection($users))->response()->getData(true));
+        return response()->list(UserCollection::make($users)->response()->getData(true));
     }
 
     public function store(UserStoreRequest $request, UserService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.user.create']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.create"]);
 
         try {
             $user = $service->create($request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.store.success', ['attribute' => $service->getAlias(),]),
-                'data' => new UserDetailResource($user),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('User store: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.store.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.store.success', ['attribute' => $service->getAlias(),]),
+                data: UserDetailResource::make($user)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function show(User $user): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.user.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
         $this->authorize('view', $user);
 
-        return response()->json([
-            'data' => new UserDetailResource($user),
-        ]);
+        return response()->success(data: UserDetailResource::make($user));
     }
 
     public function update(UserUpdateRequest $request, User $user, UserService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.user.update']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.update"]);
         $this->authorize('update', $user);
 
         try {
             $user = $service->update($user, $request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.update.success', ['attribute' => $service->getAlias(),]),
-                'data' => new UserDetailResource($user),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('User update: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.update.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.update.success', ['attribute' => $service->getAlias(),]),
+                data: UserDetailResource::make($user)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.update.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function destroy(User $user, UserService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.user.delete']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.delete"]);
         $this->authorize('delete', $user);
 
         try {
             $service->delete($user);
 
-            return response()->json([
-                'message' => __('messages.delete.success', ['attribute' => $service->getAlias(),]),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('User delete: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.delete.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.delete.success', ['attribute' => $service->getAlias(),]),
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.delete.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
@@ -128,38 +111,32 @@ class UserController extends Controller
         try {
             $service->changeRole($user, $request->roles);
 
-            return response()->json([
-                'message' => __('messages.role-change.success', ['attribute' => $service->getAlias()]),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('User change role: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.role-change.failure', ['attribute' => $service->getAlias()]),
-            ], 500);
+            return response()->success(
+                message: __('messages.role-change.success', ['attribute' => $service->getAlias(),]),
+                data: UserDetailResource::make($user)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.role-change.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function statusChange(User $user, UserService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.user.change-status']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.change-status"]);
         $this->authorize('changeStatus', $user);
 
         try {
             $user = $service->changeStatus($user, !$user->status->value);
 
-            return response()->json([
-                'message' => __('messages.status-change.success', [
+            return response()->success(
+                message: __('messages.status-change.success', [
                     'attribute' => $service->getAlias(),
                     'status' => $user->status->getAlias(),
                 ]),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('User change status: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.status-change.failure'),
-            ], 500);
+                data: UserDetailResource::make($user)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.status-change.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

@@ -5,7 +5,6 @@ namespace Modules\ContactUs\app\Http\Controllers\Api\V1\AdminPanel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Modules\ContactUs\app\Http\Requests\Api\V1\AdminPanel\ContactUs\ContactUsUpdateRequest;
 use Modules\ContactUs\app\Models\ContactUs;
@@ -15,40 +14,32 @@ use Modules\RolePermission\app\Models\Permission;
 
 class ContactUsController extends Controller
 {
-    public function __construct()
-    {
-        $this->instance = ContactUs::firstOrFail();
-    }
+    protected string $permissionPrefix = 'admin_panel.about_us';
 
     public function index(): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.contact_us.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $cacheKey = config('contactus.cache_key');
+        $data = Cache::has($cacheKey) ? Cache::get($cacheKey) : ContactUs::firstOrFail();
 
-        $data = Cache::has($cacheKey) ? Cache::get($cacheKey) : $this->instance;
-
-        return response()->json([
-            'data' => new ContactUsResource($data),
-        ]);
+        return response()->success(data: ContactUsResource::make($data));
     }
 
     public function update(ContactUsUpdateRequest $request, ContactUsService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.contact_us.update']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.update"]);
 
         try {
-            $service->update($this->instance, $request->getSafeData());
+            $contact = ContactUs::firstOrFail();
+            $service->update($contact, $request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.update.success', ['attribute' => $service->getAlias(),]),
-                'data' => new ContactUsResource($this->instance),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Setting update: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.update.failure', ['attribute' => $this->alias,]),
-            ], 500);
+            return response()->success(
+                message: __('messages.update.success', ['attribute' => $service->getAlias(),]),
+                data: ContactUsResource::make($contact)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.update.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

@@ -5,7 +5,6 @@ namespace Modules\VersionControl\app\Http\Controllers\Api\V1\AdminPanel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Modules\VersionControl\app\Http\Requests\Api\V1\AdminPanel\Platform\PlatformStoreRequest;
 use Modules\VersionControl\app\Http\Requests\Api\V1\AdminPanel\Platform\PlatformUpdateRequest;
@@ -17,13 +16,15 @@ use Modules\RolePermission\app\Models\Permission;
 
 class PlatformController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.platform';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.platform.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $platforms = Platform::query()
             ->when($request->search, function ($q, $v) {
-                $q->where('title', 'LIKE', "%$v%");
+                $q->whereLike('title', $v);
             })
             ->when($request->os, function ($q, $v) {
                 $q->where('os', $v);
@@ -38,94 +39,79 @@ class PlatformController extends Controller
             ? $platforms->paginate($request->get('page_size'))
             : $platforms->get();
 
-        return response()->json((new PlatformCollection($platforms))->response()->getData(true));
+        return response()->list(PlatformCollection::make($platforms)->response()->getData(true));
     }
 
     public function store(PlatformStoreRequest $request, PlatformService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.platform.create']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.create"]);
 
         try {
             $platform = $service->create($request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.store.success', ['attribute' => $service->getAlias(),]),
-                'data' => new PlatformResource($platform),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Platform store: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.store.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.store.success', ['attribute' => $service->getAlias(),]),
+                data: PlatformResource::make($platform)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function show(Platform $platform): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.platform.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
-        return response()->json([
-            'data' => new PlatformResource($platform),
-        ]);
+        return response()->success(data: PlatformResource::make($platform));
     }
 
     public function update(PlatformUpdateRequest $request, Platform $platform, PlatformService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.platform.update']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.update"]);
 
         try {
             $service->update($platform, $request->getSafeData());
 
-            return response()->json([
-                'message' => __('messages.update.success', ['attribute' => $service->getAlias(),]),
-                'data' => new PlatformResource($platform),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Platform update: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.update.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.update.success', ['attribute' => $service->getAlias(),]),
+                data: PlatformResource::make($platform)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.update.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function destroy(Platform $platform, PlatformService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.platform.delete']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.delete"]);
 
         try {
             $service->delete($platform);
 
-            return response()->json([
-                'message' => __('messages.delete.success', ['attribute' => $service->getAlias(),]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Platform destroy: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.delete.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.delete.success', ['attribute' => $service->getAlias(),]),
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.delete.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function changeStatus(Platform $platform, PlatformService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.platform.change-status']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.change-status"]);
 
         try {
             $platform = $service->changeStatus($platform, !$platform->status->value);
 
-            return response()->json([
-                'message' => __('messages.status-change.success', [
+            return response()->success(
+                message: __('messages.status-change.success', [
                     'attribute' => $service->getAlias(),
                     'status' => $platform->status->getAlias(),
                 ]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Platform status: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.status-change.failure'),
-            ], 500);
+                data: PlatformResource::make($platform)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.status-change.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

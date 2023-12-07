@@ -14,10 +14,10 @@ class FAQController extends Controller
     public function index(Request $request): JsonResponse
     {
         $faqs = FAQ::query()
-            ->when($request->search, function ($q, $value) {
-                $q->where('question', 'LIKE', "%$value%");
+            ->when($request->search, function ($q, $v) {
+                $q->whereLike('question', $v);
             })
-            ->orderBy('sort_index', 'desc')
+            ->orderBy('sort_index')
             ->orderBy('created_at', 'desc');
 
 
@@ -25,13 +25,11 @@ class FAQController extends Controller
             ? $faqs->paginate($request->get('page_size'))
             : $faqs->get();
 
-        return response()->json((new FAQCollection($faqs))->response()->getData(true));
+        return response()->list(FAQCollection::make($faqs)->response()->getData(true));
     }
 
     public function show(FAQ $faq): JsonResponse
     {
-        return response()->json([
-            'data' => new FAQResource($faq),
-        ]);
+        return response()->success(data: FAQResource::make($faq));
     }
 }

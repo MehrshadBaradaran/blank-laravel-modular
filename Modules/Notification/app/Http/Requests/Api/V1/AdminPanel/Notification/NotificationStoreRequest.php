@@ -2,6 +2,7 @@
 
 namespace Modules\Notification\app\Http\Requests\Api\V1\AdminPanel\Notification;
 
+use App\Enums\StatusEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -64,6 +65,7 @@ class NotificationStoreRequest extends FormRequest
             'body' => $this->body,
 
             'type' => NotificationTypeEnum::MANUAL,
+            'status' => StatusEnum::getDefaultCaseValue(),
             'inform_type' => $this->inform_type,
 
             'general' => $this->general,

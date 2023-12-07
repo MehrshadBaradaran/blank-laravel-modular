@@ -66,15 +66,15 @@ return [
         ],
 
         'report' => [
-            'driver' => 'report',
+            'driver' => 'single',
             'path' => storage_path('logs/report.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
-        'bug_report' => [
-            'driver' => 'bug-report',
-            'path' => storage_path('logs/bug-report.log'),
+        'error' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/error.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],

@@ -12,6 +12,6 @@ class PermissionController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
-        return response()->json(new PermissionTypeCollection(PermissionType::all()));
+        return response()->success(data: PermissionTypeCollection::make(PermissionType::all()));
     }
 }

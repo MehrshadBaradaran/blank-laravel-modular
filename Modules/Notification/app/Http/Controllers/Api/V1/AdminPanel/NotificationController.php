@@ -5,7 +5,6 @@ namespace Modules\Notification\app\Http\Controllers\Api\V1\AdminPanel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Modules\Notification\app\Http\Requests\Api\V1\AdminPanel\Notification\NotificationStoreRequest;
 use Modules\Notification\app\Http\Requests\Api\V1\AdminPanel\Notification\NotificationUpdateRequest;
@@ -17,9 +16,11 @@ use Modules\RolePermission\app\Models\Permission;
 
 class NotificationController extends Controller
 {
+    protected string $permissionPrefix = 'admin_panel.notification';
+
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.notification.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
         $notifications = Notification::query()
             ->when($request->search, function ($q, $v) {
@@ -49,94 +50,79 @@ class NotificationController extends Controller
             ? $notifications->paginate($request->get('page_size'))
             : $notifications->get();
 
-        return response()->json((new NotificationCollection($notifications))->response()->getData(true));
+        return response()->list(NotificationCollection::make($notifications)->response()->getData(true));
     }
 
     public function store(NotificationStoreRequest $request, NotificationService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.notification.create']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.create"]);
 
         try {
             $notification = $service->create($request->safeData(), $request->users);
 
-            return response()->json([
-                'message' => __('messages.store.success', ['attribute' => $service->getAlias(),]),
-                'data' => new NotificationDetailResource($notification),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Notification store: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.store.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.store.success', ['attribute' => $service->getAlias(),]),
+                data: NotificationDetailResource::make($notification)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function show(Notification $notification): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.notification.view']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.view"]);
 
-        return response()->json([
-            'data' => new NotificationDetailResource($notification),
-        ]);
+        return response()->success(data: NotificationDetailResource::make($notification));
     }
 
     public function update(NotificationUpdateRequest $request, Notification $notification, NotificationService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.notification.update']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.update"]);
 
         try {
             $service->update($notification, $request->safeData(), $request->users);
 
-            return response()->json([
-                'message' => __('messages.update.success', ['attribute' => $service->getAlias(),]),
-                'data' => new NotificationDetailResource($notification),
-            ]);
-
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Notification update: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.update.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.update.success', ['attribute' => $service->getAlias(),]),
+                data: NotificationDetailResource::make($notification)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.update.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function destroy(Notification $notification, NotificationService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.notification.delete']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.delete"]);
 
         try {
             $service->delete($notification);
 
-            return response()->json([
-                'message' => __('messages.delete.success', ['attribute' => $service->getAlias(),]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Notification destroy: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.delete.failure', ['attribute' => $service->getAlias(),]),
-            ], 500);
+            return response()->success(
+                message: __('messages.delete.success', ['attribute' => $service->getAlias(),]),
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.delete.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 
     public function changeStatus(Notification $notification, NotificationService $service): JsonResponse
     {
-        $this->authorize('checkPermission', [Permission::class, 'admin_panel.notification.change-status']);
+        $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.change-status"]);
 
         try {
             $notification = $service->changeStatus($notification, !$notification->status->value);
 
-            return response()->json([
-                'message' => __('messages.status-change.success', [
+            return response()->success(
+                message: __('messages.status-change.success', [
                     'attribute' => $service->getAlias(),
                     'status' => $notification->status->getAlias(),
                 ]),
-            ]);
-        } catch (Exception $exception) {
-            Log::channel('report')->error('Notification status: ' . $exception->getMessage());
-            return response()->json([
-                'message' => __('messages.status-change.failure'),
-            ], 500);
+                data: NotificationDetailResource::make($notification)
+            );
+        } catch (Exception $e) {
+            return response()->error($e, __('messages.status-change.failure', ['attribute' => $service->getAlias(),]));
         }
     }
 }

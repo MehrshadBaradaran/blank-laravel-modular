@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Gallery\app\Services\GalleryService;
 use Modules\VersionControl\app\Enums\PlatformOSEnum;
 use Modules\VersionControl\app\Observers\PlatformObserver;
+use Modules\VersionControl\app\Services\PlatformService;
 use Modules\VersionControl\Database\factories\PlatformFactory;
 
 class Platform extends Model
@@ -30,6 +31,11 @@ class Platform extends Model
     protected static function newFactory(): PlatformFactory
     {
         return PlatformFactory::new();
+    }
+
+    protected static function service(): PlatformService
+    {
+        return new PlatformService();
     }
 
     //.................Casts.................

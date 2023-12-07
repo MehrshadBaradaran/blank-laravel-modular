@@ -23,7 +23,7 @@ class NotificationController extends Controller
 
         $notifications = Notification::query()
             ->when($request->search, function ($q, $v) {
-                $q->where('title', 'LIKE', "%$v%");
+                $q->whereLike('title', $v);
             })
             ->when($request->users, function ($q, $v) {
                 $q->whereHas('users', function ($q) use ($v) {

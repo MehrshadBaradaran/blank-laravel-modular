@@ -24,8 +24,8 @@ class AuthUserResource extends JsonResource
 
             'is_admin' => $this->is_admin,
 
-            'avatar' => $this->avatar_obj,
-            'roles' => $this->roles_arr,
+            'avatar' => $this->avatar,
+            'roles' => $this->role_ids_array,
             'permissions' => $permissions->toArray(),
         ];
     }

@@ -60,7 +60,7 @@ class RouteServiceProvider extends ServiceProvider
                 // Admin Panel
                 Route::prefix('admin-panel')
                     ->as('admin-panel.')
-                    ->middleware(['panel.access',])
+                    ->middleware(['panel.admin.access',])
                     ->group($path . 'v1/admin_panel.php');
 
                 // App

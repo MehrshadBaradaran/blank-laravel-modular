@@ -1,8 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Modules\User\app\Models;
 
 use App\Enums\StatusEnum;
+use Hash;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -29,8 +30,12 @@ class User extends Authenticatable
     protected $guarded = [
         'id',
     ];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
         self::observe(UserObserver::class);
@@ -182,6 +187,16 @@ class User extends Authenticatable
                     ->where('read', false);
             })
             ->count();
+    }
+
+    public function setPhoneAttribute($value): void
+    {
+        $this->attributes['phone'] = (new UserService())->formatPhoneToCode($value);
+    }
+
+    public function setPasswordAttribute($value): void
+    {
+        $this->attributes['password'] = Hash::make($value);
     }
 
     //.................Functionality.................

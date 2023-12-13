@@ -29,13 +29,6 @@ class PasswordUpdateRequest extends FormRequest
         ];
     }
 
-    protected function passedValidation(): void
-    {
-        $this->merge([
-            'password' => \Hash::make($this->password),
-        ]);
-    }
-
     public function getSafeData(): array
     {
         return [

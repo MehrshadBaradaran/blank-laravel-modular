@@ -49,17 +49,16 @@ class UserController extends Controller
     public function store(UserStoreRequest $request, UserService $service): JsonResponse
     {
         $this->authorize('checkPermission', [Permission::class, "$this->permissionPrefix.create"]);
-
-        try {
+//        try {
             $user = $service->create($request->getSafeData());
 
             return response()->success(
                 message: __('messages.store.success', ['attribute' => $service->getAlias(),]),
                 data: UserDetailResource::make($user)
             );
-        } catch (Exception $e) {
-            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
-        }
+//        } catch (Exception $e) {
+//            return response()->error($e, __('messages.store.failure', ['attribute' => $service->getAlias(),]));
+//        }
     }
 
     public function show(User $user): JsonResponse

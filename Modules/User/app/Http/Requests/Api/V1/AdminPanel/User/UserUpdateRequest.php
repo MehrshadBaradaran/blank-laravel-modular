@@ -3,24 +3,15 @@
 namespace Modules\User\app\Http\Requests\Api\V1\AdminPanel\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Modules\Authentication\app\Rules\Phone;
 use Modules\Gallery\app\Rules\ImageGalleryUploadRule;
-use Modules\User\app\Services\UserService;
 
 class UserUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return true;
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'phone' => (new UserService())->formatPhoneToCode($this->phone),
-        ]);
     }
 
     public function rules(): array
@@ -53,13 +44,6 @@ class UserUpdateRequest extends FormRequest
                 Rule::requiredIf(!$this->user),
             ],
         ];
-    }
-
-    protected function passedValidation(): void
-    {
-        $this->merge([
-            'password' => $this->password ? Hash::make($this->password) : $this->user?->password,
-        ]);
     }
 
     public function getSafeData(): array

@@ -2,10 +2,12 @@
 
 namespace Modules\RolePermission\app\Models;
 
+use Arr;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
-use \Spatie\Permission\Models\Permission as BasePermissionModel;
+use Spatie\Permission\Models\Permission as BasePermissionModel;
 
 class Permission extends BasePermissionModel
 {
@@ -43,15 +45,18 @@ class Permission extends BasePermissionModel
     }
 
     //.................Attributes.................
-    public function getSubNameAttribute(): string
+    public function subName(): Attribute
     {
-        $arr = explode('.', $this->name);
-        return end($arr);
+        return Attribute::make(
+            get: fn(): string => Arr::last(explode('.', $this->name))
+        );
     }
 
-    public function getAliasAttribute(): string
+    public function alias(): Attribute
     {
-        return __("rolepermission::aliases.permission.$this->sub_name");
+        return Attribute::make(
+            get: fn(): string => __("rolepermission::aliases.permission.$this->sub_name")
+        );
     }
 
     //.................Functionality.................

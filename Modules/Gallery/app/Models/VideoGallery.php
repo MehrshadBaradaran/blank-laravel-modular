@@ -57,7 +57,7 @@ class VideoGallery extends Model
     }
 
     //.................Attributes.................
-    public function FilesData()
+    public function FilesData(): Attribute
     {
         return Attribute::make(
             get: fn() => (new GalleryService())->getFullUrlFilesArray($this->files)

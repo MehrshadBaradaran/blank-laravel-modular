@@ -23,7 +23,7 @@ class NotificationDetailResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
-            'users' => $this->users_data_array,
+            'users' => $this->users_data,
         ];
     }
 }

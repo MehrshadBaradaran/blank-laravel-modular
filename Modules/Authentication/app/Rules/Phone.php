@@ -13,7 +13,7 @@ class Phone implements Rule
 
     public function passes(mixed $attribute, mixed $value): bool
     {
-        return preg_match("/^09[0-9]{9}$/", $value);
+        return preg_match("/^989[0-9]{9}$/", $value);
     }
 
     public function message(): string

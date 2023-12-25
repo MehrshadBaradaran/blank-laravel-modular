@@ -21,8 +21,6 @@ class VerificationTokenService
 
     public function getLatestOTPByPhone(string|null $phone): ?string
     {
-        $verificationToken = $this->getLatestTokenByPhone($phone);
-
-        return $verificationToken?->otp;
+        return $this->getLatestTokenByPhone($phone)?->otp;
     }
 }

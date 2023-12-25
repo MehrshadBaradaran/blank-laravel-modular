@@ -20,7 +20,7 @@ class VersionResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
-            'platform' => $this->platform_obj,
+            'platform' => $this->platform_data,
         ];
     }
 }

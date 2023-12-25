@@ -4,6 +4,7 @@ namespace Modules\User\app\Models;
 
 use App\Enums\StatusEnum;
 use Hash;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -133,70 +134,77 @@ class User extends Authenticatable
     }
 
     //.................Attributes.................
-    public function getAvatarUrlsAttribute(): ?array
+    public function avatarUrls(): Attribute
     {
-        return (new GalleryService())->getFullUrlFilesArray($this->avatar_paths);
+        return Attribute::make(
+            get: fn(): ?array => (new GalleryService())->getFullUrlFilesArray($this->avatar_paths)
+        );
     }
 
-    public function getAvatarAttribute(): ?array
+    public function avatar(): Attribute
     {
-        $data = [
-            'id' => $this->avatar_id,
-            'urls' => $this->avatar_urls,
-        ];
-
-        return $this->avatar_id ? $data : null;
+        return Attribute::make(
+            get: fn(): ?array => $this->avatar_id
+                ? [
+                    'id' => $this->avatar_id,
+                    'urls' => $this->avatar_urls,
+                ]
+                : null
+        );
     }
 
-    public function getPhoneWithZeroAttribute(): string
+    public function phoneWithZero(): Attribute
     {
-        return (new UserService())->formatPhoneToZero($this->phone);
+        return Attribute::make(
+            get: fn(): string => (new UserService())->formatPhoneToZero($this->phone)
+        );
     }
 
-    public function getFullNameAttribute(): ?string
+    public function fullName(): Attribute
     {
-        return ($this->first_name and $this->last_name) ? "$this->first_name $this->last_name" : null;
+        return Attribute::make(
+            get: fn(): string => ($this->first_name and $this->last_name) ? "$this->first_name $this->last_name" : null
+        );
     }
 
-    public function getRoleIdsArrayAttribute(): ?array
+    public function isSuperAdmin(): Attribute
     {
-        $ids = $this->roles()
-            ->pluck('id')
-            ->toArray();
-
-        return !empty($ids) ? $ids : null;
+        return Attribute::make(
+            get: fn(): bool => $this->hasRole('super_admin')
+        );
     }
 
-    public function getIsSuperAdminAttribute(): bool
+    public function roleIdsArray(): Attribute
     {
-        return $this->hasRole('super_admin');
+        return Attribute::make(
+            get: fn(): ?array => $this->roles()->exists() ? $this->roles()->pluck('id')->toArray() : null
+        );
     }
 
-    public function getPermissionsArrayAttribute(): array
+    public function permissionsArray(): Attribute
     {
-        return $this->getAllPermissions()
-            ->pluck('name')
-            ->toArray();
+        return Attribute::make(
+            get: fn(): array => $this->getAllPermissions()->pluck('name')->toArray()
+        );
     }
 
-    public function getUnreadNotificationsCountAttribute(): int
+    public function unreadNotificationsCount(): Attribute
     {
-        return Notification::query()
-            ->orWhereHas('users', function ($q) {
-                $q->where('user_id', $this->id)
-                    ->where('read', false);
-            })
-            ->count();
+        return Attribute::make(
+            get: fn(): int => Notification::query()
+                ->whereHas('users', function ($q) {
+                    $q->where('user_id', $this->id)
+                        ->where('read', false);
+                })
+                ->count()
+        );
     }
 
-    public function setPhoneAttribute($value): void
+    public function password(): Attribute
     {
-        $this->attributes['phone'] = (new UserService())->formatPhoneToCode($value);
-    }
-
-    public function setPasswordAttribute($value): void
-    {
-        $this->attributes['password'] = Hash::make($value);
+        return Attribute::make(
+            set: fn($value) => $this->attributes['password'] = Hash::make($value)
+        );
     }
 
     //.................Functionality.................

@@ -2,6 +2,7 @@
 
 namespace Modules\VersionControl\app\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,12 +47,14 @@ class Version extends Model
     }
 
     //.................Attributes.................
-    public function getPlatformObjAttribute(): array
+    public function platformData(): Attribute
     {
-        return [
-            'id' => $this->platform_id,
-            'title' => $this->platform->title,
-        ];
+        return Attribute::make(
+            get: fn(): array => [
+                'id' => $this->platform_id,
+                'title' => $this->platform->title,
+            ]
+        );
     }
 
     //.................Functionality.................

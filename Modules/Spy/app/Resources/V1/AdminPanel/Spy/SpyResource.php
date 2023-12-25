@@ -20,9 +20,8 @@ class SpyResource extends JsonResource
 
             'date' => $this->created_at,
 
-            'permission' => $this->permission_data_array,
-            'target' => $this->target_data_array,
-
+            'permission' => $this->permission_data,
+            'target_info' => $this->target_info,
             'target_data' => $this->target_data,
             'user' => $this->user_data,
             'request_data' => $this->request_data,

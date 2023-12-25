@@ -3,6 +3,7 @@
 namespace Modules\RolePermission\app\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -53,14 +54,18 @@ class PermissionGroup extends Model
     }
 
     //.................Attributes.................
-    public function getVisiblePermissionsAttribute(): Collection
+    public function visiblePermissions(): Attribute
     {
-        return $this->permissions()->control()->get();
+        return Attribute::make(
+            get: fn(): Collection => $this->permissions()->control()->get()
+        );
     }
 
-    public function getAliasAttribute(): string
+    public function alias(): Attribute
     {
-        return __("rolepermission::alias.group.$this->name");
+        return Attribute::make(
+            get: fn(): string => __("rolepermission::aliases.group.$this->name")
+        );
     }
 
     //.................Functionality.................

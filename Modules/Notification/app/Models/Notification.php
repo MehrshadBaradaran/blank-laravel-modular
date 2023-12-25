@@ -3,6 +3,9 @@
 namespace Modules\Notification\app\Models;
 
 use App\Enums\StatusEnum;
+use Auth;
+use DB;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,37 +64,47 @@ class Notification extends Model
     }
 
     //.................Attributes.................
-    public function getUsersIdArrayAttribute(): ?array
+    public function userIds(): Attribute
     {
-        return $this->users()->pluck('users.id')->toArray();
+        return Attribute::make(
+            get: fn(): ?array => $this->users()->exists() ? $this->users()->pluck('users.id')->toArray() : null
+        );
     }
 
-    public function getUsersDataArrayAttribute(): array|null
+    public function usersData(): Attribute
     {
-        return !$this->general
-            ? $this->users()
-                ->get()
-                ->map(function (User $user) {
-                    return [
-                        'id' => $user->id,
-                        'full_name' => $user->full_name,
-                    ];
-                })->toArray()
-            : null;
+        return Attribute::make(
+            get: function (): ?array {
+                return !$this->general
+                    ? $this->users()
+                        ->get(['users.id', 'users.first_name', 'users.last_name',])
+                        ->map(function (User $user) {
+                            return [
+                                'id' => $user->id,
+                                'full_name' => $user->full_name,
+                            ];
+                        })
+                        ->toArray()
+                    : null;
+
+            }
+        );
     }
 
-    public function getIsReadAttribute(): bool
+    public function isRead(): Attribute
     {
-        return (bool)\DB::table('notification_user')
-            ->where('user_id', \Auth::id())
-            ->where('notification_id', $this->id)
-            ->first()
-            ?->read;
+        return Attribute::make(
+            get: fn(): bool => (bool)DB::table('notification_user')
+                ->where('user_id', Auth::id())
+                ->where('notification_id', $this->id)
+                ->first()
+                ?->read
+        );
     }
 
     //.................Functionality.................
     public function markAsRead(): void
     {
-        $this->users()->syncWithPivotValues([\Auth::id(),], ['read' => true,]);
+        $this->users()->syncWithPivotValues([Auth::id(),], ['read' => true,]);
     }
 }

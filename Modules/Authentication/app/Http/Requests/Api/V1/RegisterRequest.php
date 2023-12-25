@@ -22,15 +22,6 @@ class RegisterRequest extends FormRequest
         ]);
     }
 
-    protected function passedValidation(): void
-    {
-        $this->merge([
-            'password' => Hash::make($this->password),
-
-            'is_registered' => true,
-        ]);
-    }
-
     public function rules(): array
     {
         return [
@@ -53,5 +44,12 @@ class RegisterRequest extends FormRequest
                 'required', 'string', 'confirmed', 'min:8', 'max:18',
             ],
         ];
+    }
+
+    protected function passedValidation(): void
+    {
+        $this->merge([
+            'is_registered' => true,
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\Gallery\app\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,9 +57,11 @@ class ImageGallery extends Model
     }
 
     //.................Attributes.................
-    public function getFilesDataAttribute(): array
+    public function FilesData(): Attribute
     {
-        return (new GalleryService())->getFullUrlFilesArray($this->files);
+        return Attribute::make(
+            get: fn() => (new GalleryService())->getFullUrlFilesArray($this->files)
+        );
     }
 
     //.................Functionality.................

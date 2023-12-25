@@ -3,6 +3,7 @@
 namespace Modules\RolePermission\app\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -40,9 +41,11 @@ class PermissionType extends Model
     }
 
     //.................Attributes.................
-    public function getAliasAttribute(): string
+    public function alias(): Attribute
     {
-        return __("rolepermission::aliases.type.$this->name");
+        return Attribute::make(
+            get: fn(): string => __("rolepermission::aliases.type.$this->name")
+        );
     }
 
     //.................Functionality.................

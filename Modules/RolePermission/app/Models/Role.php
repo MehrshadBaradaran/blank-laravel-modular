@@ -3,6 +3,7 @@
 namespace Modules\RolePermission\app\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\RolePermission\app\Services\RoleService;
@@ -43,13 +44,11 @@ class Role extends BaseRoleModel
     }
 
     //.................Attributes.................
-    public function getPermissionsIdArrAttribute(): array
+    public function permissionIds(): Attribute
     {
-        return $this->permissions
-            ->map(function ($permission) {
-                return $permission->id;
-            })
-            ->toArray();
+        return Attribute::make(
+            get: fn(): array => $this->getAllPermissions()->pluck('id')->toArray()
+        );
     }
 
     //.................Functionality.................

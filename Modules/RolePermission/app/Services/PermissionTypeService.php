@@ -36,11 +36,10 @@ class PermissionTypeService
         $date = now();
 
         foreach ($this->getTypesArr() as $type) {
-
-            array_push($data, [
+            $data[] = [
                 'name' => $type,
                 'created_at' => $date,
-            ]);
+            ];
         }
 
         return $data;

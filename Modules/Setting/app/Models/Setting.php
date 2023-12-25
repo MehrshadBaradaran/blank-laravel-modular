@@ -18,9 +18,6 @@ class Setting extends Model
     }
 
     //.................Casts.................
-    protected $casts = [
-        //
-    ];
 
     //.................Relations.................
 

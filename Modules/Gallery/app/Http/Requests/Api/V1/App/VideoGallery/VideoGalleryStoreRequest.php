@@ -4,7 +4,7 @@ namespace Modules\Gallery\app\Http\Requests\Api\V1\App\VideoGallery;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\ImageGallerySectionEnum;
 use Modules\Gallery\app\Services\VideoService;
 
 class VideoGalleryStoreRequest extends FormRequest
@@ -35,7 +35,7 @@ class VideoGalleryStoreRequest extends FormRequest
         return [
             'section' => [
                 'required', 'string',
-                new Enum(GallerySectionEnum::class),
+                new Enum(ImageGallerySectionEnum::class),
             ],
 
             'file' => [

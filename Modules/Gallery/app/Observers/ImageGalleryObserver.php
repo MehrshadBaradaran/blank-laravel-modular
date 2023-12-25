@@ -7,7 +7,7 @@ use Modules\Gallery\app\Models\ImageGallery;
 
 class ImageGalleryObserver
 {
-    public function deleted(ImageGallery $image)
+    public function deleted(ImageGallery $image): void
     {
         $disk = 'public';
 

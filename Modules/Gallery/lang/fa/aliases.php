@@ -7,10 +7,19 @@ return [
         'gallery-getting' => 'تنظیات گالری',
     ],
 
-    'section' => [
-        'default' => 'پیش فرض',
-        'user' => 'کاربر',
-        'banner' => 'بنر',
-        'platform' => 'سکو',
+    'image' => [
+        'section' => [
+            'default' => 'پیش فرض',
+            'user' => 'کاربر',
+            'banner' => 'بنر',
+            'platform' => 'سکو',
+            'network' => 'شبکه',
+        ],
+    ],
+
+    'video' => [
+        'section' => [
+            'default' => 'پیش فرض',
+        ],
     ],
 ];

@@ -3,7 +3,7 @@
 namespace Modules\Gallery\app\Resources\V1\AdminPanel\GallerySetting;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\ImageGallerySectionEnum;
 
 class GallerySettingResource extends JsonResource
 {
@@ -17,7 +17,7 @@ class GallerySettingResource extends JsonResource
 
             'image_generate_patterns' => $this->image_generate_patterns,
 
-            'sections' => GallerySectionEnum::getValues(),
+            'sections' => ImageGallerySectionEnum::getValues(),
         ];
     }
 }

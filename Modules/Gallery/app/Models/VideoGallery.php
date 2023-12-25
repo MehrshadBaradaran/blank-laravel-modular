@@ -2,10 +2,11 @@
 
 namespace Modules\Gallery\app\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\VideoGallerySectionEnum;
 use Modules\Gallery\app\Observers\VideoGalleryObserver;
 use Modules\Gallery\app\Services\GalleryService;
 use Modules\Gallery\app\Services\VideoGalleryService;
@@ -31,7 +32,7 @@ class VideoGallery extends Model
 
     //.................Casts.................
     protected $casts = [
-        'section' => GallerySectionEnum::class,
+        'section' => VideoGallerySectionEnum::class,
 
         'occupied' => 'bool',
 
@@ -56,9 +57,11 @@ class VideoGallery extends Model
     }
 
     //.................Attributes.................
-    public function getFilesDataAttribute(): array
+    public function FilesData()
     {
-        return (new GalleryService())->getFullUrlFilesArray($this->files);
+        return Attribute::make(
+            get: fn() => (new GalleryService())->getFullUrlFilesArray($this->files)
+        );
     }
 
     //.................Functionality.................

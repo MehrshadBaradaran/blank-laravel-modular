@@ -2,12 +2,9 @@
 
 namespace Modules\Gallery\app\Enums;
 
-enum GallerySectionEnum: string
+enum VideoGallerySectionEnum: string
 {
-    case DEFAULT   = 'default';
-    case USER      = 'user';
-    case BANNER    = 'banner';
-    case PLATFORM  = 'platform';
+    case DEFAULT = 'default';
 
     public static function getNames(): array
     {
@@ -47,13 +44,10 @@ enum GallerySectionEnum: string
 
     public function getAlias(): string
     {
-        $key = 'gallery::aliases.section.';
+        $key = 'gallery::aliases.video.section.';
 
         return match ($this) {
-            self::DEFAULT   => __($key . self::DEFAULT->value),
-            self::USER      => __($key . self::USER->value),
-            self::BANNER    => __($key . self::BANNER->value),
-            self::PLATFORM  => __($key . self::PLATFORM->value),
+            self::DEFAULT => __($key . self::DEFAULT->value),
         };
     }
 }

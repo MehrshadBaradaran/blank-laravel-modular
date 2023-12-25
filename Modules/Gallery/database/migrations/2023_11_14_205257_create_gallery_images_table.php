@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\ImageGallerySectionEnum;
 use Modules\User\app\Models\User;
 
 return new class extends Migration
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->nullable()->constrained()->cascadeOnDelete()->cascadeOnDelete();
 
-            $table->string('section')->default(GallerySectionEnum::getDefaultCaseValue());
+            $table->string('section')->default(ImageGallerySectionEnum::getDefaultCaseValue());
 
             $table->integer('height');
             $table->integer('width');

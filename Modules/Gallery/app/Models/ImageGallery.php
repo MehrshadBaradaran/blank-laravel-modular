@@ -5,7 +5,7 @@ namespace Modules\Gallery\app\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\ImageGallerySectionEnum;
 use Modules\Gallery\app\Observers\ImageGalleryObserver;
 use Modules\Gallery\app\Services\GalleryService;
 use Modules\Gallery\app\Services\ImageGalleryService;
@@ -31,7 +31,7 @@ class ImageGallery extends Model
 
     //.................Casts.................
     protected $casts = [
-        'section' => GallerySectionEnum::class,
+        'section' => ImageGallerySectionEnum::class,
 
         'occupied' => 'bool',
 

@@ -3,7 +3,7 @@
 namespace Modules\Gallery\app\Resources\V1\App\GallerySetting;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\ImageGallerySectionEnum;
 
 class GallerySettingResource extends JsonResource
 {
@@ -13,7 +13,7 @@ class GallerySettingResource extends JsonResource
             'max_image_upload_size' => $this->max_image_upload_size,
             'max_video_upload_size' => $this->max_video_upload_size,
 
-            'sections' => GallerySectionEnum::getValues(),
+            'sections' => ImageGallerySectionEnum::getValues(),
         ];
     }
 }

@@ -8,7 +8,7 @@ use Modules\Gallery\app\Models\VideoGallery;
 
 class VideoGalleryObserver
 {
-    public function deleted(VideoGallery $video)
+    public function deleted(VideoGallery $video): void
     {
         $disk = 'public';
 

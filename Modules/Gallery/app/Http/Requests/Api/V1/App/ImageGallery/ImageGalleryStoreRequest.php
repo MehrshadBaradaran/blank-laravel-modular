@@ -4,7 +4,7 @@ namespace Modules\Gallery\app\Http\Requests\Api\V1\App\ImageGallery;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
-use Modules\Gallery\app\Enums\GallerySectionEnum;
+use Modules\Gallery\app\Enums\ImageGallerySectionEnum;
 use Modules\Gallery\app\Services\ImageService;
 
 class ImageGalleryStoreRequest extends FormRequest
@@ -36,7 +36,7 @@ class ImageGalleryStoreRequest extends FormRequest
         return [
             'section' => [
                 'required', 'string',
-                new Enum(GallerySectionEnum::class),
+                new Enum(ImageGallerySectionEnum::class),
             ],
 
             'file' => [

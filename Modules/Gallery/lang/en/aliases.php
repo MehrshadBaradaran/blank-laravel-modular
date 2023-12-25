@@ -7,10 +7,19 @@ return [
         'gallery-setting' => 'gallery setting',
     ],
 
-    'section' => [
-        'default' => 'default',
-        'user' => 'user',
-        'banner' => 'banner',
-        'platform' => 'platform',
+    'image' => [
+        'section' => [
+            'default' => 'default',
+            'user' => 'user',
+            'banner' => 'banner',
+            'platform' => 'platform',
+            'network' => 'network',
+        ],
+    ],
+
+    'video' => [
+        'section' => [
+            'default' => 'default',
+        ],
     ],
 ];
